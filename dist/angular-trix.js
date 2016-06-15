@@ -1,6 +1,7 @@
-/*! angular-trix - v1.0.0 - 2015-12-09
+/*! angular-trix - v1.0.2 - 2016-06-15
 * https://github.com/sachinchoolur/angular-trix
-* Copyright (c) 2015 Sachin; Licensed MIT */
+* Copyright (c) 2016 Sachin; Licensed MIT */
+// https://github.com/sachinchoolur/angular-trix
 (function() {
     'use strict';
     angular.module('angularTrix', []).directive('angularTrix', function() {
@@ -19,6 +20,8 @@
             },
             link: function(scope, element, attrs, ngModel) {
 
+                var receivedFocus;
+
                 element.on('trix-initialize', function() {
                     if (ngModel.$modelValue) {
                         element[0].editor.loadHTML(ngModel.$modelValue);
@@ -31,7 +34,13 @@
                     }
 
                     element.on('trix-change', function() {
-                        ngModel.$setViewValue(element.html());
+                        if (receivedFocus) {
+                            ngModel.$setViewValue(element.html());
+                        }
+                    });
+
+                    element.on('trix-focus', function() {
+                        receivedFocus = true;
                     });
                 };
 
@@ -41,10 +50,14 @@
                             e.preventDefault();
                         }
 
-                        scope[method]({
-                            e: e,
-                            editor: element[0].editor
-                        });
+                        if(!scope.$root.$$phase) {
+                          scope.$apply(function() {
+                            scope[method]({
+                                e: e,
+                                editor: element[0].editor
+                            });
+                          });
+                        }
                     });
                 };
 
